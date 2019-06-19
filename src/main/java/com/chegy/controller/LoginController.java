@@ -1,0 +1,64 @@
+package com.chegy.controller;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.chegy.model.User;
+import com.chegy.service.UserService;
+import com.chegy.util.ResultBean;
+
+
+@Controller
+public class LoginController {
+	
+	@Resource
+	private UserService userService;
+	
+//	@RequestMapping({ "/", "/index" })
+//	public String index(Model model) {
+//		
+//		return "index";
+//	}
+
+	@RequestMapping("/login")
+	public String login(Model model) {
+		return "login";
+	}
+
+	@PostMapping("/login2")
+	@ResponseBody
+	public ResultBean login(User user,HttpSession session) throws Exception {
+		System.out.println("/login2------user = "+user);
+		
+		if(user == null) {
+			return ResultBean.success("用户未登录");
+		}
+		//判断账号密码是否正确
+		User findUser = userService.findByUsername(user.getUsername());
+		
+		if(findUser == null) {
+			return ResultBean.success("用户名不存在");
+		}else {
+			if(findUser.getPassword().equals(user.getPassword())==true) {
+				session.setAttribute("user", findUser);
+				return ResultBean.success("登录成功");
+			}else {
+				return ResultBean.success("密码错误");
+			}
+		}
+		
+	}
+
+	@RequestMapping("/403")
+	public String unauthorizedRole() {
+		System.out.println("------没有权限-------");
+		return "403";
+	}
+
+}

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>用户管理</title>
+<meta name="renderer" content="webkit">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport"
+		content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<link rel="shortcut icon" type="image/x-icon" th:href="@{/favicon.ico}" />
+<link rel="stylesheet" th:href="@{/lib/layui/css/layui.css}">
+<link rel="stylesheet" th:href="@{/css/common.css}">
+<link rel="stylesheet" th:href="@{/css/animate.min.css}">
+</head>
+
+<body>
+
+	<div class="page-loading">
+		<div class="rubik-loader"></div>
+	</div>
+
+	<div class="layui-fluid">
+		<div class="layui-card">
+			<div class="layui-card-header fontsize16">用户管理</div>
+			<div class="layui-card-body">
+				<table class="layui-hide" id="user-table"
+					lay-filter="user-operate"></table>
+				<script type="text/html" id="user-operate">
+					<a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">编辑</a>
+					<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">删除</a>
+				</script>
+			</div>
+		</div>
+	</div>
+	<div class="z-body animated fadeIn">
+
+		<table class="layui-hide" id="user-table"></table>
+	</div>
+	<script type="text/html" id="toolbar">
+        <a class="layui-btn layui-btn-xs layui-btn-blue" lay-event="add">新增</a>
+
+    </script>
+
+	<script th:src="@{/lib/jquery/jquery.min.js}"></script>
+	<script th:src="@{/lib/layui/layui.js}"></script>
+	<script th:src="@{/js/common.js}"></script>
+
+	<script>
+		layui.use([ 'table', 'element', 'form' ], function() {
+			var $ = layui.$,
+			layer = layui.layer,
+			laypage = layui.laypage,
+			form=layui.form,
+			laydate=layui.laydate,	
+			table = layui.table;
+
+			var usertable = table.render({
+				elem : '#user-table',
+				url : '/user/list',
+				page : true,
+				toolbar : '#toolbar',
+				cols : [ [ {
+					type : 'numbers',
+					title : '序号',
+					width : "5%"
+				}, {
+					field : 'id',
+					title : 'ID',
+					width : "10%",
+					hide : true
+				}, {
+					field : 'username',
+					title : '用户名',
+					width : "15%"
+				}
+				, {field: 'deptName', title: '部门', width: "15%"}
+				, {field: 'userinfo.email', title: '邮箱', width: "15%"}
+				, {field: 'userinfo.updatedTime', title: '最后登陆时间', width: "15%"} 
+				, {
+					field : 'status',
+					title : '状态',
+					templet : "#statusTpl",
+					width : "5%"
+				}, {
+					title : '操作',
+					fixed : 'right',
+					align : 'center',
+					toolbar : '#user-operate',
+					width : "10%"
+				} ] ],
+				page : {
+					layout : [ 'count', 'prev', 'page', 'next', 'limit' ], //,curr: 5 //设定初始在第 5 页
+					prev : '上一页',
+					next : '下一页',
+					first : '首页',
+					last : '尾页'
+				},
+				text : {
+					none : '暂无相关数据'
+				},
+				loading : true
+			});
+
+			// 工具条点击事件
+            table.on('toolbar', function (obj) {
+                var data = obj.data;
+                var event = obj.event;
+
+                if (event === 'add') {
+                    add();
+                }
+            });
+
+            function add() {
+                layer.open({
+                    content: "/user",
+                    title: "新增用户",
+                    area: ['40%', '85%'],
+                    type: 2,
+                    maxmin: true,
+                    shadeClose: true,
+                    end: function () {
+                        $(".layui-laypage-btn")[0].click()
+                    }
+                });
+            }
+			//监听工具条
+			table.on('tool(user-operate)', function(obj) {
+				var data = obj.data;
+
+				console.log(data);
+				if (obj.event === 'delete') {
+					layer.confirm('您确定要删除该记录吗？', function(index) {
+						var url = 'admin/course/delete';
+						$.ajax({
+							url : url,
+							cache : false,
+							async : true,
+							type : "get", //数据发送方式
+							dataType : "json", //接受数据格式
+							data : {
+								cid : data.cid
+							},
+							success : function(data, status) {
+								if (status == "success") {
+									if (data.code == -10) {
+										//session过期，跳转
+										window.top.location.href = "/"
+												+ data.data;
+									} else {
+										usertable.reload();
+										layer.msg(data.msg);
+									}
+								}
+							},
+							error : function(XMLHttpRequest, textStatus,
+									errorThrown) {
+								layer.msg("发送删除请求失败");
+							}
+						});
+						layer.close(index);
+					});
+				} else if (obj.event === 'edit') {
+					//显示弹出窗口
+					$('#cid').val(data.cid);
+					$('#cname').val(data.cname);
+
+					form.render();
+
+					layer.open({
+						title : '修改课程',
+						shadeClose : true,
+						area : [ '650px', '450px' ],
+						type : 1,
+						content : $('#edituser'),
+						//隐藏弹出窗口
+						end : function() {
+							$("#edituser").prop("style", "display:none;");
+						}
+					});
+				}
+			});
+			//点击了保存按钮
+			$("body").on("click", "#btn_save", function() {
+
+				var cid = $('#cid').val();
+				if (cid == null || cid == undefined || cid == "") {
+					layer.msg("课程号不能为空", {
+						icon : 5
+					});
+					return;
+				}
+				var cname = $('#cname').val();
+				if (cname == null || cname == undefined || cname == "") {
+					layer.msg("课程名不能为空", {
+						icon : 5
+					});
+					return;
+				}
+				var data = $('#user_form').serialize();
+				var url = 'admin/course/edit';
+				$.post(url, data, function(data, status, xhr) {
+					if (status == "success") {
+						if (data.code == -10) {
+							//session过期，跳转
+							layer.closeAll('page');
+							window.top.location.href = data.data;
+						} else if (data.code == 0) {
+							layer.closeAll('page');
+							layer.msg(data.msg);
+							usertable.reload();
+						} else {
+							layer.msg(data.msg);
+						}
+					} else {
+						return layer.msg("编辑用户信息失败！");
+					}
+				}, "json").fail(function() {
+					layer.closeAll('page');
+					return layer.msg("发送用户信息失败！");
+				});
+			});
+		});
+	</script>
+</body>
+
+</html>
