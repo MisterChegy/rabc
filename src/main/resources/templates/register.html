@@ -82,6 +82,9 @@
 
             //添加表单监听事件,提交注册信息
             form.on('submit(sub)', function (form) {
+            	/* console.log(form.field);
+            	alert("表单提交"); */
+            	
                 $.post('/register', form.field, function (result) {
                     handlerResult(result, registerDone);
                 });

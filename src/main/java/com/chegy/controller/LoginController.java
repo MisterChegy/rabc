@@ -5,6 +5,7 @@ import javax.servlet.http.HttpSession;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -61,4 +62,26 @@ public class LoginController {
 		return "403";
 	}
 
+	//退出登录
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+    	session.setAttribute("user", null);
+    
+    	return "login";
+    }
+    
+    //注册页面
+    @GetMapping("/register")
+    public String signUp() {
+    	return "register";
+    }
+    
+    //注册
+    @PostMapping("/register")
+    @ResponseBody
+    public ResultBean register(User user) {
+    	
+    	userService.addUser(user, null, null);
+		return ResultBean.success("注册成功");
+    }
 }

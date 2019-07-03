@@ -1,5 +1,5 @@
 package com.chegy.model;
-// Generated 2019-6-12 8:38:37 by Hibernate Tools 5.1.10.Final
+// Generated 2019-6-19 8:46:25 by Hibernate Tools 5.1.10.Final
 
 import java.util.HashSet;
 import java.util.Set;
@@ -10,6 +10,8 @@ import javax.persistence.GeneratedValue;
 import static javax.persistence.GenerationType.IDENTITY;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -22,13 +24,13 @@ import javax.persistence.Table;
 public class Position implements java.io.Serializable {
 
 	private Integer id;
-	private Organization organization;
+	private Depart depart;
 	private Position position;
 	private String pname;
 	private Set<Salary> salaries = new HashSet<Salary>(0);
 	private Set<Position> positions = new HashSet<Position>(0);
-	private Set<User> users = new HashSet<User>(0);
-
+	
+	
 	public Position() {
 	}
 
@@ -36,14 +38,12 @@ public class Position implements java.io.Serializable {
 		this.pname = pname;
 	}
 
-	public Position(Organization organization, Position position, String pname, Set<Salary> salaries,
-			Set<Position> positions, Set<User> users) {
-		this.organization = organization;
+	public Position(Depart depart, Position position, String pname, Set<Salary> salaries, Set<Position> positions) {
+		this.depart = depart;
 		this.position = position;
 		this.pname = pname;
 		this.salaries = salaries;
 		this.positions = positions;
-		this.users = users;
 	}
 
 	@Id
@@ -59,13 +59,13 @@ public class Position implements java.io.Serializable {
 	}
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "organization_id")
-	public Organization getOrganization() {
-		return this.organization;
+	@JoinColumn(name = "depart_id")
+	public Depart getDepart() {
+		return this.depart;
 	}
 
-	public void setOrganization(Organization organization) {
-		this.organization = organization;
+	public void setDepart(Depart depart) {
+		this.depart = depart;
 	}
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -104,14 +104,7 @@ public class Position implements java.io.Serializable {
 	public void setPositions(Set<Position> positions) {
 		this.positions = positions;
 	}
-
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "position")
-	public Set<User> getUsers() {
-		return this.users;
-	}
-
-	public void setUsers(Set<User> users) {
-		this.users = users;
-	}
-
+	
+	
+	
 }

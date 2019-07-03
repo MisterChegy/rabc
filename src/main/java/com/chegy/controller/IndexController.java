@@ -1,5 +1,8 @@
 package com.chegy.controller;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -10,6 +13,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.chegy.model.Menu;
+import com.chegy.model.Operator;
+import com.chegy.model.Role;
 import com.chegy.model.User;
 import com.chegy.service.MenuService;
 
@@ -29,10 +34,44 @@ public class IndexController {
 			return "login";
 		}
 		//菜单列表
-		Set<Menu> menuTreeVOS = menuService.selectCurrentUserMenuTree(user);
+		List<Menu> menuTreeVOS = menuService.selectCurrentUserMenuTree(user);
         model.addAttribute("menus", menuTreeVOS);
         
-        System.out.println("menus = "+menuTreeVOS);
-		return "index";
+        //功能权限
+        Map<String,Boolean> oper = new HashMap<>();
+        
+        Set<Role> roles = user.getRoles();
+		for(Role r : roles) {
+			Set<Operator> operators = r.getOperators();
+
+			putPermsToMap(operators,oper);
+		}
+		System.out.println("oper = "+oper);
+        session.setAttribute("oper", oper);
+		
+        return "index";
 	}
+
+	private void putPermsToMap(Set<Operator> operators, Map<String, Boolean> oper) {
+		// TODO Auto-generated method stub
+		for(Operator o : operators) {
+			permsToKey(o.getPerms(),oper);
+			
+		}
+	}
+
+	private void permsToKey(String perms, Map<String, Boolean> oper) {
+		// TODO Auto-generated method stub
+		//user:add
+		String[] part = perms.split(":");
+		String key = "";
+		
+		for(String i : part) {
+			key += i;
+		}
+		//useradd
+		oper.put(key, true);
+	}
+	
+	
 }

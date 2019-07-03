@@ -10,4 +10,12 @@ public interface UserService {
 
 	Page<User> selectAllWithDept(int page, int limit);
 
+	User findById(Integer id);
+
+	void updatePassword(Integer id, String password);
+
+	void addUser(User user, Integer[] role, Integer[] departIds);
+
+	void deleteUserById(Integer id);
+
 }

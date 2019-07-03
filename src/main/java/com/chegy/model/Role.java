@@ -1,13 +1,10 @@
 package com.chegy.model;
-// Generated 2019-6-12 8:38:37 by Hibernate Tools 5.1.10.Final
-
 import static javax.persistence.GenerationType.IDENTITY;
 
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -29,16 +26,17 @@ public class Role implements java.io.Serializable {
 
 	private Integer id;
 	private String name;
+	private String remark;
 	private boolean status;
 	private Date updatedTime;
 	private Date createdTime;
 
 	private Set<User> users;// 一个角色对应多个用户
 
-	private Set<Access> accesses;
-
 	private Set<Menu> menus;
 
+	private Set<Operator> operators;
+	
 	public Role() {
 	}
 
@@ -100,7 +98,7 @@ public class Role implements java.io.Serializable {
 	}
 
 	// 用户 - 角色关系定义;
-	@ManyToMany(fetch = FetchType.LAZY)
+	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "UserRole", joinColumns = { @JoinColumn(name = "roleId") }, inverseJoinColumns = {
 			@JoinColumn(name = "uid") })
 	public Set<User> getUsers() {
@@ -113,18 +111,6 @@ public class Role implements java.io.Serializable {
 
 	// 权限 - 角色关系定义;
 	@ManyToMany(fetch = FetchType.EAGER) // 立即从数据库中进行加载数据;
-	@JoinTable(name = "RoleAccess", joinColumns = { @JoinColumn(name = "roleId") }, inverseJoinColumns = {
-			@JoinColumn(name = "accessId") })
-	public Set<Access> getAccesses() {
-		return accesses;
-	}
-
-	public void setAccesses(Set<Access> accesses) {
-		this.accesses = accesses;
-	}
-
-	// 菜单 - 角色关系定义;
-	@ManyToMany(fetch = FetchType.EAGER) // 立即从数据库中进行加载数据;
 	@JoinTable(name = "RoleMenu", joinColumns = { @JoinColumn(name = "roleId") }, inverseJoinColumns = {
 			@JoinColumn(name = "menuId") })
 	public Set<Menu> getMenus() {
@@ -135,11 +121,30 @@ public class Role implements java.io.Serializable {
 		this.menus = menus;
 	}
 
+	@ManyToMany(fetch = FetchType.EAGER) // 立即从数据库中进行加载数据;
+	@JoinTable(name = "RoleOperator", joinColumns = { @JoinColumn(name = "roleId") }, inverseJoinColumns = {
+			@JoinColumn(name = "operatorId") })
+	public Set<Operator> getOperators() {
+		return operators;
+	}
+
+	public void setOperators(Set<Operator> operators) {
+		this.operators = operators;
+	}
+
+	@Column(name = "remark", length = 100)
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+
 	@Override
 	public String toString() {
 		return "Role [id=" + id + ", name=" + name + ", status=" + status + ", updatedTime=" + updatedTime
 				+ ", createdTime=" + createdTime + "]";
 	}
-
 	
 }
